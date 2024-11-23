@@ -45,7 +45,7 @@ const products = [
     type: "sandals",
   },
   {
-    name: "PWRFrame OP-1 Equinox Unisex Sneakers",
+    name: "PWR Frame OP-1 Equinox Unisex Sneakers",
     price: 6359,
     org_price: 11999,
     image:
@@ -57,9 +57,15 @@ const products = [
 
 const cart_quant = document.querySelector(".cart_quant");
 const prodGrid = document.querySelector(".prod_grid");
-const cartSec = document.querySelector(".right")
-const checkoutBtn = document.createElement("button")
 
+// Cart Section
+const cartSec = document.querySelector(".right");
+const cartProdcts = document.querySelector(".cart-products");
+const checkoutBtn = document.createElement("button");
+checkoutBtn.textContent = "Checkout";
+checkoutBtn.classList.add("checkout_btn");
+
+cartProdItemQuant = 1;
 quantity = 1;
 
 products.forEach((product) => {
@@ -69,8 +75,8 @@ products.forEach((product) => {
   const prodItemDet = document.createElement("div");
   prodItemDet.classList.add("prod_item_det");
 
-  const prodItemAddToCart = document.createElement("button");
-  prodItemAddToCart.classList.add("addtocart");
+  const AddToCart = document.createElement("button");
+  AddToCart.classList.add("addtocart");
 
   prodItem.innerHTML = `
      <img
@@ -81,30 +87,98 @@ products.forEach((product) => {
   prodItemDet.innerHTML = `
    <h4>${product.name}</h4>
     <div class="prod_item_price">
-      <h3 class="price">₹${product.price}</h3>
+      <h3 class="price">₹ ${product.price}</h3>
       <p class="org-price">${product.org_price}</p>
     </div>
   `;
-  prodItemAddToCart.innerHTML = `Add to Cart`;
+  AddToCart.innerHTML = `Add to Cart`;
 
-  prodItemAddToCart.addEventListener("click", () => {
-    handleCartQuant();
-    cart(product);
+  AddToCart.addEventListener("click", () => {
+    console.log(product)
+    ShopIconQuant();
+    displayCartProducts(product);
   });
 
-  prodItemDet.appendChild(prodItemAddToCart);
+  prodItemDet.appendChild(AddToCart);
   prodItem.appendChild(prodItemDet);
   prodGrid.appendChild(prodItem);
 });
 
-function handleCartQuant() {
+function ShopIconQuant() {
   cart_quant.textContent = `${quantity++}`;
   localStorage.setItem("card_Quantity", cart_quant.textContent);
 }
 
-function cart(product){
-    console.log(product);
-    cartSec.innerHTML=``
+function displayCartProducts(product) {
+  
+  // Create the product card container
+  const cartProductItem = document.createElement("div");
+  cartProductItem.classList.add("card-product-item");
+  cartProductItem.innerHTML = `
+    <img class="cart_prod_img" src="${product.image}" alt="${product.name}">
+    <div class="cart_prod_det">
+      <h5>${product.name}</h5>
+      <div class="cart_prod_price">
+        <h3 class="cart_price">₹ ${product.price}</h3>
+        <p class="cart_org_price">${product.org_price}</p>
+      </div>
+      <div class="cart_prod_btn">
+        <button class="prod_btn">-</button>
+        <p class="quantity_display">1</p>
+        <button class="prod_btn">+</button>
+      </div>
+    </div>
+    <i id="cart_remove_icon" class="ri-delete-bin-line"></i>
+  `;
+
+  // Append the product card to the cart
+  cartProdcts.appendChild(cartProductItem);
+  cartSec.appendChild(cartProdcts);
+  cartSec.appendChild(checkoutBtn);
+
+  // Select elements
+  const decreaseButton = cartProductItem.querySelector(".prod_btn:first-child");
+  const increaseButton = cartProductItem.querySelector(".prod_btn:last-child");
+  const quantityDisplay = cartProductItem.querySelector(".quantity_display");
+  const cartPrice = cartProductItem.querySelector(".cart_price");
+
+  // Decrease quantity
+  decreaseButton.addEventListener("click", () => {
+    if (cartProdItemQuant > 1) {
+      cartProdItemQuant--;
+      handleCartQuant();
+      updateCart();
+    } else {
+      cartProdcts.removeChild(cartProductItem);
+    }
+  });
+
+  // Increase quantity
+  increaseButton.addEventListener("click", () => {
+    cartProdItemQuant++;
+    handleCartQuant();
+    updateCart();
+  });
+
+  // Remove item from cart
+  cartProductItem
+    .querySelector("#cart_remove_icon")
+    .addEventListener("click", () => {
+      cartProdcts.removeChild(cartProductItem);
+    });
+
+  // Update quantity and price
+  function updateCart() {
+    quantityDisplay.textContent = cartProdItemQuant;
+    cartPrice.textContent = `₹ ${product.price * cartProdItemQuant}`;
+  }
+}
+
+function handleCartQuant() {
+  quantity = cartProdItemQuant;
+  console.log(quantity);
+  cart_quant.textContent = `${quantity}`;
+  localStorage.setItem("card_Quantity", cart_quant.textContent);
 }
 
 function getCart_QuantLs() {
@@ -115,5 +189,4 @@ function getCart_QuantLs() {
     cart_quant.textContent = saveCart_Quant;
   }
 }
-
 window.addEventListener("DOMContentLoaded", getCart_QuantLs());
