@@ -110,13 +110,13 @@ nav {
   width: 90%;
 }
 
-.cart_prod_img {
+.cart_item_img {
   height: 80px;
   width: 80px;
   object-fit: cover;
   border-radius: 50%;
 }
-.cart_org_price {
+.cart_item_org_price {
   text-decoration: line-through;
 }
 .cart_prod_btn {

@@ -1,5 +1,6 @@
 const products = [
   {
+    id: 1,
     name: "CA Pro Classic Unisex Sneakers",
     price: 6399,
     org_price: 7999,
@@ -9,6 +10,7 @@ const products = [
     type: "shoe",
   },
   {
+    id: 2,
     name: "Divecat V2 Lite Cat Unisex Slides",
     price: 1399,
     org_price: 1999,
@@ -18,6 +20,7 @@ const products = [
     type: "slider",
   },
   {
+    id: 3,
     name: "PUMA x one8 22 FH Rubber Unisex Cricket Shoes",
     price: 4869,
     org_price: 6499,
@@ -27,6 +30,7 @@ const products = [
     type: "shoe",
   },
   {
+    id: 4,
     name: "Pacer Future Unisex Sneakers",
     price: 3849,
     org_price: 6999,
@@ -36,6 +40,7 @@ const products = [
     type: "shoe",
   },
   {
+    id: 5,
     name: "Zeal Men's Sandals",
     price: 2249,
     org_price: 2999,
@@ -45,6 +50,7 @@ const products = [
     type: "sandals",
   },
   {
+    id: 6,
     name: "PWR Frame OP-1 Equinox Unisex Sneakers",
     price: 6359,
     org_price: 11999,
@@ -60,14 +66,18 @@ const prodGrid = document.querySelector(".prod_grid");
 
 // Cart Section
 const cartSec = document.querySelector(".right");
-const cartProdcts = document.querySelector(".cart-products");
+const cartProdctsList = document.querySelector(".cart-products");
+
 const checkoutBtn = document.createElement("button");
 checkoutBtn.textContent = "Checkout";
 checkoutBtn.classList.add("checkout_btn");
 
-cartProdItemQuant = 1;
-quantity = 1;
+// Initialize cart items and quantity
+let quantity = 1;
+let cartItems = [];
+console.log(cartItems);
 
+// Render products
 products.forEach((product) => {
   const prodItem = document.createElement("div");
   prodItem.classList.add("prod_item");
@@ -79,24 +89,21 @@ products.forEach((product) => {
   AddToCart.classList.add("addtocart");
 
   prodItem.innerHTML = `
-     <img
-    src="${product.image}"
-    alt=""
-  />`;
+      <img src="${product.image}" alt="" />
+    `;
 
   prodItemDet.innerHTML = `
-   <h4>${product.name}</h4>
-    <div class="prod_item_price">
-      <h3 class="price">₹ ${product.price}</h3>
-      <p class="org-price">${product.org_price}</p>
-    </div>
-  `;
-  AddToCart.innerHTML = `Add to Cart`;
+      <h4>${product.name}</h4>
+      <div class="prod_item_price">
+        <h3 class="price">₹ ${product.price}</h3>
+        <p class="org-price">${product.org_price}</p>
+      </div>
+    `;
+  AddToCart.innerHTML = "Add to Cart";
 
   AddToCart.addEventListener("click", () => {
-    console.log(product)
-    ShopIconQuant();
     displayCartProducts(product);
+    ShopIconQuant(product);
   });
 
   prodItemDet.appendChild(AddToCart);
@@ -104,89 +111,140 @@ products.forEach((product) => {
   prodGrid.appendChild(prodItem);
 });
 
-function ShopIconQuant() {
-  cart_quant.textContent = `${quantity++}`;
-  localStorage.setItem("card_Quantity", cart_quant.textContent);
+// ShopIconQuant function (not used but could be for updating the cart quantity on the icon)
+function ShopIconQuant(product) {
+  const totalQuantity = cartItems.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
+
+  // Update the cart icon with the total quantity
+  cart_quant.textContent = totalQuantity;
+  // localStorage.setItem("card_Quantity", cart_quant.textContent);
 }
 
 function displayCartProducts(product) {
-  
-  // Create the product card container
+  console.log(cartItems);
+
+  let existingProduct = cartItems.find(
+    (cartItem) => cartItem.id === product.id
+  );
+
+  if (existingProduct) {
+    // Update existing product in cart
+    existingProduct.quantity += 1;
+
+    const quantityDisplay = document.querySelector(
+      `.cart_item_quantity[data-id="${existingProduct.id}"]`
+    );
+    const cartPrice = document.querySelector(
+      `.cart_item_price[data-id="${existingProduct.id}"]`
+    );
+
+    if (quantityDisplay && cartPrice) {
+      quantityDisplay.textContent = existingProduct.quantity;
+      cartPrice.textContent = `₹ ${
+        existingProduct.price * existingProduct.quantity
+      }`;
+    }
+  } else {
+    // Add new product to cart
+    product.quantity = 1;
+    cartItems.push(product);
+    cartProductsUi(product);
+  }
+  console.log("Current cart:", cartItems);
+}
+
+function cartProductsUi(product) {
+  console.log("cartproductui", product.id);
   const cartProductItem = document.createElement("div");
   cartProductItem.classList.add("card-product-item");
   cartProductItem.innerHTML = `
-    <img class="cart_prod_img" src="${product.image}" alt="${product.name}">
-    <div class="cart_prod_det">
-      <h5>${product.name}</h5>
-      <div class="cart_prod_price">
-        <h3 class="cart_price">₹ ${product.price}</h3>
-        <p class="cart_org_price">${product.org_price}</p>
+      <img class="cart_item_img" src="${product.image}" alt="${product.name}">
+      <div class="cart_prod_det">
+        <h5>${product.name}</h5>
+        <div class="cart_prod_price">
+          <h3 class="cart_item_price" data-id="${product.id}">₹ ${product.price}</h3>
+          <p class="cart_item_org_price">${product.org_price}</p>
+        </div>
+        <div class="cart_prod_btn">
+          <button class="prod_btn sub-btn">-</button>
+          <p class="cart_item_quantity" data-id="${product.id}">1</p>
+          <button class="prod_btn add-btn">+</button>
+        </div>
       </div>
-      <div class="cart_prod_btn">
-        <button class="prod_btn">-</button>
-        <p class="quantity_display">1</p>
-        <button class="prod_btn">+</button>
-      </div>
-    </div>
-    <i id="cart_remove_icon" class="ri-delete-bin-line"></i>
-  `;
+      <i id="cart_remove_icon" class="ri-delete-bin-line"></i>
+    `;
 
-  // Append the product card to the cart
-  cartProdcts.appendChild(cartProductItem);
-  cartSec.appendChild(cartProdcts);
+  // Select elements for buttons and quantity
+  const decreaseButton = cartProductItem.querySelector(".sub-btn");
+  const increaseButton = cartProductItem.querySelector(".add-btn");
+  const quantityDisplay = cartProductItem.querySelector(".cart_item_quantity");
+  const cartPrice = cartProductItem.querySelector(".cart_item_price");
+
+  // Append product item to cart
+  cartProdctsList.appendChild(cartProductItem);
+  cartSec.appendChild(cartProdctsList);
   cartSec.appendChild(checkoutBtn);
 
-  // Select elements
-  const decreaseButton = cartProductItem.querySelector(".prod_btn:first-child");
-  const increaseButton = cartProductItem.querySelector(".prod_btn:last-child");
-  const quantityDisplay = cartProductItem.querySelector(".quantity_display");
-  const cartPrice = cartProductItem.querySelector(".cart_price");
+  // Handle increase and decrease of product quantity
+  handleIncreaseBtn(increaseButton, product, quantityDisplay, cartPrice);
+  handleDecreaseBtn(
+    decreaseButton,
+    product,
+    quantityDisplay,
+    cartPrice,
+    cartProductItem
+  );
+  removeCartItem(product, cartProductItem);
+}
 
-  // Decrease quantity
+function handleDecreaseBtn(
+  decreaseButton,
+  product,
+  quantityDisplay,
+  cartPrice,
+  cartProductItem
+) {
   decreaseButton.addEventListener("click", () => {
-    if (cartProdItemQuant > 1) {
-      cartProdItemQuant--;
-      handleCartQuant();
-      updateCart();
+    if (product.quantity > 1) {
+      product.quantity--;
+      ShopIconQuant(product);
+      updateCart(product, quantityDisplay, cartPrice);
     } else {
-      cartProdcts.removeChild(cartProductItem);
+      cartProdctsList.removeChild(cartProductItem);
+      cartItems = cartItems.filter((item) => item.id !== product.id);
+      product.quantity = 0;
+      ShopIconQuant(product);
     }
   });
+}
 
-  // Increase quantity
+function handleIncreaseBtn(
+  increaseButton,
+  product,
+  quantityDisplay,
+  cartPrice
+) {
   increaseButton.addEventListener("click", () => {
-    cartProdItemQuant++;
-    handleCartQuant();
-    updateCart();
+    product.quantity++;
+    ShopIconQuant(product);
+    updateCart(product, quantityDisplay, cartPrice);
   });
-
-  // Remove item from cart
-  cartProductItem
-    .querySelector("#cart_remove_icon")
-    .addEventListener("click", () => {
-      cartProdcts.removeChild(cartProductItem);
-    });
-
-  // Update quantity and price
-  function updateCart() {
-    quantityDisplay.textContent = cartProdItemQuant;
-    cartPrice.textContent = `₹ ${product.price * cartProdItemQuant}`;
-  }
 }
 
-function handleCartQuant() {
-  quantity = cartProdItemQuant;
-  console.log(quantity);
-  cart_quant.textContent = `${quantity}`;
-  localStorage.setItem("card_Quantity", cart_quant.textContent);
+function removeCartItem(product, cartProductItem) {
+  const removeIcon = cartProductItem.querySelector("#cart_remove_icon");
+  removeIcon.addEventListener("click", () => {
+    cartProdctsList.removeChild(cartProductItem);
+    cartItems = cartItems.filter((item) => item.id !== product.id);
+    product.quantity = 0;
+    ShopIconQuant(product);
+  });
 }
 
-function getCart_QuantLs() {
-  const saveCart_Quant = localStorage.getItem("card_Quantity");
-  if (saveCart_Quant === null) {
-    cart_quant.textContent = 0;
-  } else {
-    cart_quant.textContent = saveCart_Quant;
-  }
+function updateCart(product, quantityDisplay, cartPrice) {
+  quantityDisplay.textContent = product.quantity;
+  cartPrice.textContent = `₹ ${product.price * product.quantity}`;
 }
-window.addEventListener("DOMContentLoaded", getCart_QuantLs());
